@@ -11,13 +11,23 @@ class Ray:
         self.origin = self.a
         self.direction = self.b
         
+
+def hit_sphere(center,radius,r):
+    oc = glm.vec3(r.origin - center)
+    a = glm.dot(r.direction,r.direction)
+    b = 2.0*glm.dot(oc,r.direction)
+    c = glm.dot(oc,oc) - radius*radius
+    discriminant = b*b - 4*a*c
+    return(discriminant > 0)
+
 def color(r):
+    
+    if(hit_sphere(glm.vec3(0,0,-1),0.5,r)):
+        return glm.vec3(1,0,0)
+
     unit_direction = glm.vec3(r.direction/glm.length(r.direction))
     t = 0.5*(unit_direction[1] + 1.0)
     return (1.0 - t)*glm.vec3(1.0,1.0,1.0) + t*glm.vec3(0.5,0.7,1.0)
-
-
-
 
 
 def main():
