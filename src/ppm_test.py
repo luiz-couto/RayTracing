@@ -5,6 +5,7 @@ import glm
 import math
 from dataclasses import dataclass
 import numpy as np
+import random
 MAXFLOAT = 3.4028234664e+38
 
 class Ray:
@@ -59,35 +60,21 @@ class hitable_list:
         closest_so_far = t_max
         for i in range(0,self.list_size,1):
             if(self._list[i].hit(r,t_min,closest_so_far,temp_rec)):
-                print(self._list[i].hit(r,t_min,closest_so_far,temp_rec))
                 hit_anything = True
                 closest_so_far = temp_rec.t
                 rec = temp_rec
         return hit_anything
 
 
+class camera:
+    def __init__(self):
+        self.lower_left_corner = glm.vec3(-2.0,-1.0,-1.0)
+        self.horizontal = glm.vec3(4.0,0.0,0.0)
+        self.vertical = glm.vec3(0.0,2.0,0.0)
+        self.origin = glm.vec3(0.0,0.0,0.0)
+    def get_ray(self,u,v):
+        return (Ray(self.origin,self.lower_left_corner + u*self.horizontal + v*self.vertical - self.origin))
 
-# def hit_sphere(center,radius,r):
-#     oc = glm.vec3(r.origin - center)
-#     a = glm.dot(r.direction,r.direction)
-#     b = 2.0*glm.dot(oc,r.direction)
-#     c = glm.dot(oc,oc) - radius*radius
-#     discriminant = b*b - 4*a*c
-#     if(discriminant < 0):
-#         return -1.0
-#     if(discriminant >= 0):
-#         return ((-b - math.sqrt(discriminant))/(2.0*a))
-
-# def color(r):
-    
-#     t = hit_sphere(glm.vec3(0,0,-1),0.5,r)
-    
-#     if(t > 0.0):
-#         n = glm.vec3(r.point_at_parameter(t) - glm.vec3(0,0,-1)/glm.length(r.point_at_parameter(t) - glm.vec3(0,0,-1)))
-#         return 0.5*glm.vec3(n[0]+1.0,n[1]+1.0,n[2]+1.0)
-#     unit_direction = glm.vec3(r.direction/glm.length(r.direction))
-#     t = 0.5*(unit_direction[1] + 1.0)
-#     return (1.0 - t)*glm.vec3(1.0,1.0,1.0) + t*glm.vec3(0.5,0.7,1.0)
 
 def color(r,world):
    
@@ -100,32 +87,34 @@ def color(r,world):
         return (1.0 - t)*glm.vec3(1.0,1.0,1.0) + t*glm.vec3(0.5,0.7,1.0)
 
 
+
 def main():
 
     nx = 200
     ny = 100
+    ns = 100
 
     f = open("test.ppm","w+")
     f.write("P3\n"+ str(nx) +" "+ str(ny) + "\n255\n")
     
-    lower_left_corner = glm.vec3(-2.0,-1.0,-1.0)
-    horizontal = glm.vec3(4.0,0.0,0.0)
-    vertical = glm.vec3(0.0,2.0,0.0)
-    origin = glm.vec3(0.0,0.0,0.0)
+    
 
     _list = {}
     _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5)
     _list[1] = sphere(glm.vec3(0.0,-100.5,-1),100)
     world = hitable_list(_list,2)
+    cam = camera()
 
-    for j in range(99,-1,-1):
-        for i in range(0,200,1):
-            u = i/nx
-            v = j/ny
-            r = Ray(origin,lower_left_corner + u*horizontal + v*vertical)
-            #col = glm.vec3(color(r))
-            p = glm.vec3(r.point_at_parameter(2.0))
-            col = color(r,world)
+    for j in range(ny-1,-1,-1):
+        for i in range(0,nx,1):
+            col = glm.vec3(0.0,0.0,0.0)
+            for s in range(0,ns,1):
+                u = float(i + random.uniform(0,0.999999999999999))/float(nx)
+                v = float(j + random.uniform(0,0.999999999999999))/float(ny)
+                r = cam.get_ray(u,v)
+                p = glm.vec3(r.point_at_parameter(2.0))
+                col = color(r,world) + col
+            col = col/float(ns)
             ir = int(255.99*col[0])
             ig = int(255.99*col[1])
             ib = int(255.99*col[2])
