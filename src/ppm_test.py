@@ -18,7 +18,6 @@ class Ray:
     def point_at_parameter(self,t):
         return self.a + t*self.b  
 
-#hit_record = namedtuple("hit_record","t p normal")
 @dataclass
 class hit_record:
     t: float
@@ -76,11 +75,19 @@ class camera:
         return (Ray(self.origin,self.lower_left_corner + u*self.horizontal + v*self.vertical - self.origin))
 
 
+def random_in_unit_sphere():
+    p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999)) - glm.vec3(1.0,1.0,1.0)
+    while(p[0]*p[0] + p[1]*p[1] + p[2]*p[2] >= 1.0):
+        p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999)) - glm.vec3(1.0,1.0,1.0)
+    return p
+
+
 def color(r,world):
    
     rec = hit_record
-    if(world.hit(r,0.0,MAXFLOAT,rec)):
-        return 0.5*glm.vec3(rec.normal[0]+1,rec.normal[1]+1,rec.normal[2]+1)
+    if(world.hit(r,0.001,MAXFLOAT,rec)):
+        target = glm.vec3(rec.p + rec.normal + random_in_unit_sphere())
+        return 0.5*color(Ray(rec.p,target - rec.p),world)
     else:
         unit_direction = glm.vec3(r.direction/glm.length(r.direction))
         t = 0.5*(unit_direction[1]+1)
@@ -115,6 +122,7 @@ def main():
                 p = glm.vec3(r.point_at_parameter(2.0))
                 col = color(r,world) + col
             col = col/float(ns)
+            col = glm.vec3(math.sqrt(col[0]),math.sqrt(col[1]),math.sqrt(col[2]))
             ir = int(255.99*col[0])
             ig = int(255.99*col[1])
             ib = int(255.99*col[2])
