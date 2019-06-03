@@ -6,7 +6,9 @@ import math
 from dataclasses import dataclass
 import numpy as np
 import random
+
 MAXFLOAT = 3.4028234664e+38
+M_PI = 3.14159265358979323846264338327950288
 
 class Ray:
     def __init__(self,a,b):
@@ -64,14 +66,31 @@ class hitable_list:
         return hit_anything
 
 
+# class camera:
+#     def __init__(self):
+#         self.lower_left_corner = glm.vec3(-2.0,-1.0,-1.0)
+#         self.horizontal = glm.vec3(4.0,0.0,0.0)
+#         self.vertical = glm.vec3(0.0,2.0,0.0)
+#         self.origin = glm.vec3(0.0,0.0,0.0)
+#     def get_ray(self,u,v):
+#         return (Ray(self.origin,self.lower_left_corner + u*self.horizontal + v*self.vertical - self.origin))
+
 class camera:
-    def __init__(self):
-        self.lower_left_corner = glm.vec3(-2.0,-1.0,-1.0)
-        self.horizontal = glm.vec3(4.0,0.0,0.0)
-        self.vertical = glm.vec3(0.0,2.0,0.0)
-        self.origin = glm.vec3(0.0,0.0,0.0)
-    def get_ray(self,u,v):
-        return (Ray(self.origin,self.lower_left_corner + u*self.horizontal + v*self.vertical - self.origin))
+    def __init__(self, lookfrom, lookat, vup, vfov, aspect):
+        self.theta = vfov*M_PI/180
+        self.half_height = math.tan(self.theta/2)
+        self.half_width = aspect * self.half_height
+        self.origin = lookfrom
+        self.w = glm.vec3((lookfrom - lookat)/(glm.length(lookfrom - lookat)))
+        self.u = glm.vec3(glm.cross(vup,self.w)/glm.length(glm.cross(vup,self.w)))
+        self.v = glm.cross(self.w,self.u)
+        self.lower_left_corner = glm.vec3(-self.half_width,-self.half_height, -1.0)
+        self.lower_left_corner = self.origin - self.half_width*self.u - self.half_height*self.v - self.w
+        self.horizontal = 2*self.half_width*self.u
+        self.vertical = 2*self.half_height*self.v
+    def get_ray(self,s,t):
+        return(Ray(self.origin,self.lower_left_corner + s*self.horizontal + t*self.vertical - self.origin))
+
 
 
 class lambertian:
@@ -219,7 +238,7 @@ def main():
     _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,dielectric(1.5))
     _list[4] = sphere(glm.vec3(-1.0,0.0,-1.0),-0.45,dielectric(1.5))
     world = hitable_list(_list,5)
-    cam = camera()
+    cam = camera(glm.vec3(-2.0,2.0,1.0), glm.vec3(0.0,0.0,-1.0), glm.vec3(0.0,1.0,0.0), 90, float(nx)/float(ny))
 
     for j in range(ny-1,-1,-1):
         for i in range(0,nx,1):
