@@ -18,16 +18,13 @@ class Ray:
     def point_at_parameter(self,t):
         return self.a + t*self.b  
 
-@dataclass
-class hit_record:
-    t: float
-    p: glm.vec3
-    normal: glm.vec3
+
 
 class sphere:
-    def __init__(self,cen,r):
+    def __init__(self,cen,r,material):
         self.center = glm.vec3(cen)
         self.radius = r
+        self.material = material
     def hit(self,r,t_min,t_max,rec):
         oc = glm.vec3(r.origin - self.center)
         a = glm.dot(r.direction,r.direction)
@@ -40,12 +37,14 @@ class sphere:
                 rec.t = temp
                 rec.p = r.point_at_parameter(rec.t)
                 rec.normal = (rec.p - self.center)/self.radius
+                rec.mat_ptr = self.material
                 return True
             temp = (-b + math.sqrt(b*b - a*c))/a
             if(temp < t_max and temp > t_min):
                 rec.t = temp
                 rec.p = r.point_at_parameter(rec.t)
                 rec.normal = (rec.p - self.center)/self.radius
+                rec.mat_ptr = self.material
                 return True
         return False
 
@@ -75,6 +74,35 @@ class camera:
         return (Ray(self.origin,self.lower_left_corner + u*self.horizontal + v*self.vertical - self.origin))
 
 
+class lambertian:
+    def __init__(self,a):
+        self.albedo = glm.vec3(a)
+    def scatter(self,r_in,rec,attenuation,scattered):
+        target = glm.vec3(rec.p + rec.normal + random_in_unit_sphere())
+        scattered = Ray(rec.p, target - rec.p)
+        attenuation = self.albedo
+        return (True,scattered,attenuation)
+
+class metal:
+    def __init__(self,a):
+        self.albedo = a
+    def scatter(self,r_in,rec,attenuation,scattered):
+        reflected = glm.vec3(reflect(r_in.direction/glm.length(r_in.direction),rec.normal))
+        scattered = Ray(rec.p, reflected)
+        attenuation = self.albedo
+        return(glm.dot(scattered.direction, rec.normal) > 0,scattered,attenuation)
+
+@dataclass
+class hit_record:
+    t: float
+    p: glm.vec3
+    normal: glm.vec3
+    mat_ptr: lambertian    #can be any material
+
+def reflect(v,n):
+    return (v - 2*glm.dot(v,n)*n)
+
+
 def random_in_unit_sphere():
     p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999)) - glm.vec3(1.0,1.0,1.0)
     while(p[0]*p[0] + p[1]*p[1] + p[2]*p[2] >= 1.0):
@@ -82,17 +110,23 @@ def random_in_unit_sphere():
     return p
 
 
-def color(r,world):
-   
+def color(r,world,depth):
     rec = hit_record
     if(world.hit(r,0.001,MAXFLOAT,rec)):
-        target = glm.vec3(rec.p + rec.normal + random_in_unit_sphere())
-        return 0.5*color(Ray(rec.p,target - rec.p),world)
+
+        attenuation = glm.vec3 
+        scattered = Ray 
+        x,scattered,attenuation = (rec.mat_ptr.scatter(r,rec,attenuation,scattered))
+        
+        if(depth < 50 and x == True):
+            return attenuation*color(scattered,world,depth+1)
+        else:
+            return glm.vec3(0.0,0.0,0.0)
     else:
         unit_direction = glm.vec3(r.direction/glm.length(r.direction))
         t = 0.5*(unit_direction[1]+1)
         return (1.0 - t)*glm.vec3(1.0,1.0,1.0) + t*glm.vec3(0.5,0.7,1.0)
-
+        
 
 
 def main():
@@ -107,9 +141,11 @@ def main():
     
 
     _list = {}
-    _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5)
-    _list[1] = sphere(glm.vec3(0.0,-100.5,-1),100)
-    world = hitable_list(_list,2)
+    _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5,lambertian(glm.vec3(0.8,0.3,0.3)))
+    _list[1] = sphere(glm.vec3(0.0,-100.5,-1),100,lambertian(glm.vec3(0.8,0.8,0.0)))
+    _list[2] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.6,0.2)))
+    _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.8,0.8)))
+    world = hitable_list(_list,4)
     cam = camera()
 
     for j in range(ny-1,-1,-1):
@@ -120,7 +156,7 @@ def main():
                 v = float(j + random.uniform(0,0.999999999999999))/float(ny)
                 r = cam.get_ray(u,v)
                 p = glm.vec3(r.point_at_parameter(2.0))
-                col = color(r,world) + col
+                col = color(r,world,0) + col
             col = col/float(ns)
             col = glm.vec3(math.sqrt(col[0]),math.sqrt(col[1]),math.sqrt(col[2]))
             ir = int(255.99*col[0])
