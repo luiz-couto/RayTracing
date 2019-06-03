@@ -84,11 +84,15 @@ class lambertian:
         return (True,scattered,attenuation)
 
 class metal:
-    def __init__(self,a):
+    def __init__(self,a,f):
         self.albedo = a
+        if(f < 1):
+            self.fuzz = f
+        else:
+            self.fuzz = 1    
     def scatter(self,r_in,rec,attenuation,scattered):
         reflected = glm.vec3(reflect(r_in.direction/glm.length(r_in.direction),rec.normal))
-        scattered = Ray(rec.p, reflected)
+        scattered = Ray(rec.p, reflected + self.fuzz*random_in_unit_sphere())
         attenuation = self.albedo
         return(glm.dot(scattered.direction, rec.normal) > 0,scattered,attenuation)
 
@@ -143,8 +147,8 @@ def main():
     _list = {}
     _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5,lambertian(glm.vec3(0.8,0.3,0.3)))
     _list[1] = sphere(glm.vec3(0.0,-100.5,-1),100,lambertian(glm.vec3(0.8,0.8,0.0)))
-    _list[2] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.6,0.2)))
-    _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.8,0.8)))
+    _list[2] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.6,0.2),0.3))
+    _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.8,0.8),1.0))
     world = hitable_list(_list,4)
     cam = camera()
 
