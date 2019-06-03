@@ -213,7 +213,7 @@ def main():
     
 
     _list = {}
-    _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5,lambertian(glm.vec3(0.8,0.3,0.3)))
+    _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5,lambertian(glm.vec3(0.1,0.2,0.5)))
     _list[1] = sphere(glm.vec3(0.0,-100.5,-1),100,lambertian(glm.vec3(0.8,0.8,0.0)))
     _list[2] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.6,0.2),0.3))
     _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,dielectric(1.5))
