@@ -96,6 +96,29 @@ class metal:
         attenuation = self.albedo
         return(glm.dot(scattered.direction, rec.normal) > 0,scattered,attenuation)
 
+class dielectric:
+    def __init__(self,ri):
+        self.ref_idx = ri
+    def scatter(self,r_in,rec,attenuation,scattered):
+        outward_normal = glm.vec3
+        reflected = glm.vec3(reflect(r_in.direction, rec.normal))
+        attenuation = glm.vec3(1.0,1.0,1.0)
+        refracted = glm.vec3
+        if(glm.dot(r_in.direction, rec.normal) > 0):
+            outward_normal = -rec.normal
+            ni_over_nt = self.ref_idx
+        else:
+            outward_normal = rec.normal
+            ni_over_nt = 1.0/self.ref_idx
+        x,refracted = refract(r_in.direction,outward_normal,ni_over_nt,refracted)
+        if(x == True):
+            scattered = Ray(rec.p, refracted)
+        else:
+            scattered = Ray(rec.p, reflected)
+            return (False,scattered,attenuation)
+        return (True,scattered,attenuation)
+
+
 @dataclass
 class hit_record:
     t: float
@@ -106,6 +129,16 @@ class hit_record:
 def reflect(v,n):
     return (v - 2*glm.dot(v,n)*n)
 
+def refract(v,n,ni_over_nt,refracted):
+    uv = glm.vec3(v/glm.length(v))
+    dt = glm.dot(uv, n)
+    discriminant = 1.0 - ni_over_nt*ni_over_nt*(1-dt*dt)
+    if(discriminant > 0):
+        refracted = ni_over_nt*(uv - n*dt) - n*math.sqrt(discriminant)
+        return (True,refracted) #talvez retornar refracted também
+    else:
+        refracted = glm.vec3
+        return (False,refracted)
 
 def random_in_unit_sphere():
     p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999)) - glm.vec3(1.0,1.0,1.0)
@@ -148,7 +181,7 @@ def main():
     _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5,lambertian(glm.vec3(0.8,0.3,0.3)))
     _list[1] = sphere(glm.vec3(0.0,-100.5,-1),100,lambertian(glm.vec3(0.8,0.8,0.0)))
     _list[2] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.6,0.2),0.3))
-    _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.8,0.8),1.0))
+    _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,dielectric(1.5))
     world = hitable_list(_list,4)
     cam = camera()
 
