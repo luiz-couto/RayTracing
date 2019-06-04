@@ -91,6 +91,24 @@ class camera:
     def get_ray(self,s,t):
         return(Ray(self.origin,self.lower_left_corner + s*self.horizontal + t*self.vertical - self.origin))
 
+class camera_blur:
+    def __init__(self, lookfrom, lookat, vup, vfov, aspect, aperture, focus_dist):
+        self.lens_radius = aperture/2
+        self.theta = vfov*M_PI/180
+        self.half_height = math.tan(self.theta/2)
+        self.half_width = aspect * self.half_height
+        self.origin = lookfrom
+        self.w = glm.vec3((lookfrom - lookat)/(glm.length(lookfrom - lookat)))
+        self.u = glm.vec3(glm.cross(vup,self.w)/glm.length(glm.cross(vup,self.w)))
+        self.v = glm.cross(self.w,self.u)
+        
+        self.lower_left_corner = self.origin - self.half_width*focus_dist*self.u - self.half_height*focus_dist*self.v - focus_dist*self.w
+        self.horizontal = 2*self.half_width*focus_dist*self.u
+        self.vertical = 2*self.half_height*focus_dist*self.v
+    def get_ray(self,s,t):
+        rd = glm.vec3(self.lens_radius*random_in_unit_disk())
+        offset = self.u*rd[0] + self.v*rd[1]
+        return(Ray(self.origin + offset,self.lower_left_corner + s*self.horizontal + t*self.vertical - self.origin - offset))
 
 
 class lambertian:
@@ -175,6 +193,14 @@ class hit_record:
     normal: glm.vec3
     mat_ptr: lambertian    #can be any material
 
+def random_in_unit_disk():
+    p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),0.0) - glm.vec3(1.0,1.0,0.0)
+    while(glm.dot(p,p) >= 1.0):
+        p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),0.0) - glm.vec3(1.0,1.0,0.0)
+    return p
+
+
+
 def reflect(v,n):
     return (v - 2*glm.dot(v,n)*n)
 
@@ -238,7 +264,16 @@ def main():
     _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,dielectric(1.5))
     _list[4] = sphere(glm.vec3(-1.0,0.0,-1.0),-0.45,dielectric(1.5))
     world = hitable_list(_list,5)
-    cam = camera(glm.vec3(-2.0,2.0,1.0), glm.vec3(0.0,0.0,-1.0), glm.vec3(0.0,1.0,0.0), 40, float(nx)/float(ny))
+    
+    #cam = camera(glm.vec3(-2.0,2.0,1.0), glm.vec3(0.0,0.0,-1.0), glm.vec3(0.0,1.0,0.0), 40, float(nx)/float(ny))
+
+    lookfrom = glm.vec3(3.0,3.0,2.0)
+    lookat = glm.vec3(0.0,0.0,-1.0)
+    dist_to_focus = glm.length(lookfrom - lookat)
+    aperture = 2.0
+
+    cam = camera_blur(lookfrom,lookat,glm.vec3(0.0,1.0,0.0),20,float(nx)/float(ny),aperture,dist_to_focus)
+
 
     for j in range(ny-1,-1,-1):
         for i in range(0,nx,1):
