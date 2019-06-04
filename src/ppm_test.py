@@ -238,7 +238,7 @@ def main():
     _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,dielectric(1.5))
     _list[4] = sphere(glm.vec3(-1.0,0.0,-1.0),-0.45,dielectric(1.5))
     world = hitable_list(_list,5)
-    cam = camera(glm.vec3(-2.0,2.0,1.0), glm.vec3(0.0,0.0,-1.0), glm.vec3(0.0,1.0,0.0), 90, float(nx)/float(ny))
+    cam = camera(glm.vec3(-2.0,2.0,1.0), glm.vec3(0.0,0.0,-1.0), glm.vec3(0.0,1.0,0.0), 40, float(nx)/float(ny))
 
     for j in range(ny-1,-1,-1):
         for i in range(0,nx,1):
