@@ -8,5 +8,9 @@ Esse projeto tem como objetivo a implementção de um RayTracing que produz uma 
 Antes de compilar o código, é necessário a instalação de algumas bibliotecas essenciais:
 * pyglm (para a manipulação de vetores)
 * math (para operações matemáticas)
-* 
+* random (necessária para gerar números aleatórios)
+
+Além de, é claro, o python 3.x. Caso você não possua alguma das bibliotecas acima, basta rodar:
+> pip install *nome_da_biblioteca*
+
 
