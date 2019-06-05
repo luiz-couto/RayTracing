@@ -27,6 +27,8 @@ Para a implementação foram criadas algumas classes, que serão brevemente expl
 ### Classe Ray
 Pense em um raio como uma função **p (t) = A + t * B**. Onde *p* é uma posição 3D ao longo de uma linha em 3D. *A* é a origem do raio e *B* é a direção do raio. O parâmetro *t* é um número real. Um diferente *t* faz com que *p* (t) mova-se ao longo do raio.
 ### Sphere
+A classe sphere foi projetada a partir da equação de uma esfera. Ela define uma esfera a partir de seu raio, centro e material. Além disso, verifica se um raio atinge sua superfície a partir da função *hit*, que recebe como parâmetro um raio *r*.
+### 
 
 
 
