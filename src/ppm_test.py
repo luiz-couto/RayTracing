@@ -66,15 +66,6 @@ class hitable_list:
         return hit_anything
 
 
-# class camera:
-#     def __init__(self):
-#         self.lower_left_corner = glm.vec3(-2.0,-1.0,-1.0)
-#         self.horizontal = glm.vec3(4.0,0.0,0.0)
-#         self.vertical = glm.vec3(0.0,2.0,0.0)
-#         self.origin = glm.vec3(0.0,0.0,0.0)
-#     def get_ray(self,u,v):
-#         return (Ray(self.origin,self.lower_left_corner + u*self.horizontal + v*self.vertical - self.origin))
-
 class camera:
     def __init__(self, lookfrom, lookat, vup, vfov, aspect):
         self.theta = vfov*M_PI/180
@@ -178,7 +169,7 @@ class dielectric:
         else:
             scattered = Ray(rec.p, reflected)
             reflect_prob = 1.0
-        if(random.uniform(0,0.999999999999999) < reflect_prob):
+        if(ran() < reflect_prob):
             scattered = Ray(rec.p, reflected)
         else:
             scattered = Ray(rec.p, refracted)
@@ -194,9 +185,9 @@ class hit_record:
     mat_ptr: lambertian    #can be any material
 
 def random_in_unit_disk():
-    p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),0.0) - glm.vec3(1.0,1.0,0.0)
+    p = 2.0*glm.vec3(ran(),ran(),0.0) - glm.vec3(1.0,1.0,0.0)
     while(glm.dot(p,p) >= 1.0):
-        p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),0.0) - glm.vec3(1.0,1.0,0.0)
+        p = 2.0*glm.vec3(ran(),ran(),0.0) - glm.vec3(1.0,1.0,0.0)
     return p
 
 
@@ -210,7 +201,7 @@ def refract(v,n,ni_over_nt,refracted):
     discriminant = 1.0 - ni_over_nt*ni_over_nt*(1-dt*dt)
     if(discriminant > 0):
         refracted = ni_over_nt*(uv - n*dt) - n*math.sqrt(discriminant)
-        return (True,refracted) #talvez retornar refracted também
+        return (True,refracted)
     else:
         refracted = glm.vec3
         return (False,refracted)
@@ -221,9 +212,9 @@ def schlick(cosine,ref_idx):
     return r0 + (1-r0)*math.pow((1-cosine),5)
 
 def random_in_unit_sphere():
-    p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999)) - glm.vec3(1.0,1.0,1.0)
+    p = 2.0*glm.vec3(ran(),ran(),ran()) - glm.vec3(1.0,1.0,1.0)
     while(p[0]*p[0] + p[1]*p[1] + p[2]*p[2] >= 1.0):
-        p = 2.0*glm.vec3(random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999),random.uniform(0,0.999999999999999)) - glm.vec3(1.0,1.0,1.0)
+        p = 2.0*glm.vec3(ran(),ran(),ran()) - glm.vec3(1.0,1.0,1.0)
     return p
 
 
@@ -243,8 +234,39 @@ def color(r,world,depth):
         unit_direction = glm.vec3(r.direction/glm.length(r.direction))
         t = 0.5*(unit_direction[1]+1)
         return (1.0 - t)*glm.vec3(1.0,1.0,1.0) + t*glm.vec3(0.5,0.7,1.0)
-        
 
+def ran():
+    return random.uniform(0,0.999999999999999)
+
+
+def random_scene():
+    
+    _list = {}
+    _list[0] = sphere(glm.vec3(0.0,-1000.0,0.0),1000,lambertian(glm.vec3(0.5,0.5,0.5)))
+    i = 1
+    for a in range(-11,11,1):
+        for b in range(-11,11,1):
+            choose_mat = ran()
+            center = glm.vec3(a+0.9*ran(),0.2,b+0.9*ran())
+            if(glm.length(center - glm.vec3(4.0,0.2,0.0)) > 0.9):
+                if(choose_mat < 0.5):
+                    _list[i] = sphere(center,0.2,lambertian(glm.vec3(ran()*ran(),ran()*ran(),ran()*ran())))
+                    i = i+1
+                if(choose_mat >= 0.5 and choose_mat < 0.8):
+                    _list[i] = sphere(center,0.2,metal(glm.vec3(0.5*(1 + ran()),0.5*(1 + ran()),0.5*(1 + ran())), 0.5*(1 + ran())))
+                    i = i+1
+                if(choose_mat >= 0.8):
+                    _list[i] = sphere(center,0.2,dielectric(1.5))
+                    i + i+1
+   
+    _list[i] = sphere(glm.vec3(0.0,1.0,0.0),1.0,dielectric(1.5))
+    i = i + 1
+    _list[i] = sphere(glm.vec3(-4.0,1.0,0.0),1.0,lambertian(glm.vec3(0.4,0.2,0.1)))
+    i = i + 1
+    _list[i] = sphere(glm.vec3(4.0,1.0,0.0),1.0,metal(glm.vec3(0.7,0.6,0.5),0.0))
+    i = i + 1
+
+    return (_list,i)
 
 def main():
 
@@ -255,23 +277,32 @@ def main():
     f = open("test.ppm","w+")
     f.write("P3\n"+ str(nx) +" "+ str(ny) + "\n255\n")
     
+    _list,i = random_scene()
+
+    # _list = {}
+    # # _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5,lambertian(glm.vec3(0.1,0.2,0.5)))
+    # #_list[0] = sphere(glm.vec3(0.0,-1000.0,0.0),1000,lambertian(glm.vec3(0.5,0.5,0.5)))
+    # _list[0] = sphere(glm.vec3(0.0,-100.5,-1),100,lambertian(glm.vec3(0.117,0.223,0.141)))
+    # # _list[2] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.6,0.2),0.3))
+    # _list[1] = sphere(glm.vec3(0.5,0.865,-1.0),0.5,dielectric(1.5))
+    # _list[2] = sphere(glm.vec3(0.5,0.865,-1.0),-0.45,dielectric(1.5))
+    # _list[3] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,dielectric(1.5))
+    # _list[4] = sphere(glm.vec3(1.0,0.0,-1.0),-0.45,dielectric(1.5))
+    # _list[5] = sphere(glm.vec3(0.0,0.0,-1.0),0.5,dielectric(1.5))
+    # _list[6] = sphere(glm.vec3(0.0,0.0,-1.0),-0.45,dielectric(1.5))
+    world = hitable_list(_list,i)
+    
+    
     
 
-    _list = {}
-    _list[0] = sphere(glm.vec3(0.0,0.0,-1),0.5,lambertian(glm.vec3(0.1,0.2,0.5)))
-    _list[1] = sphere(glm.vec3(0.0,-100.5,-1),100,lambertian(glm.vec3(0.8,0.8,0.0)))
-    _list[2] = sphere(glm.vec3(1.0,0.0,-1.0),0.5,metal(glm.vec3(0.8,0.6,0.2),0.3))
-    _list[3] = sphere(glm.vec3(-1.0,0.0,-1.0),0.5,dielectric(1.5))
-    _list[4] = sphere(glm.vec3(-1.0,0.0,-1.0),-0.45,dielectric(1.5))
-    world = hitable_list(_list,5)
-    
-    #cam = camera(glm.vec3(-2.0,2.0,1.0), glm.vec3(0.0,0.0,-1.0), glm.vec3(0.0,1.0,0.0), 40, float(nx)/float(ny))
+    lookfrom = glm.vec3(13.0,2.0,3.0)
+    #lookfrom = glm.vec3(3.4,1.0,1.5) 
+    lookat = glm.vec3(0.0,0.0,0.0)
+    #lookat = glm.vec3(0.0,0.0,-1.0)
+    dist_to_focus = 10.0
+    aperture = 0.1
 
-    lookfrom = glm.vec3(3.0,3.0,2.0)
-    lookat = glm.vec3(0.0,0.0,-1.0)
-    dist_to_focus = glm.length(lookfrom - lookat)
-    aperture = 2.0
-
+    #cam = camera(glm.vec3(3.4,1.0,1.5), glm.vec3(0.0,0.0,-1.0), glm.vec3(0.0,1.0,0.0), 40, float(nx)/float(ny))
     cam = camera_blur(lookfrom,lookat,glm.vec3(0.0,1.0,0.0),20,float(nx)/float(ny),aperture,dist_to_focus)
 
 
@@ -279,8 +310,8 @@ def main():
         for i in range(0,nx,1):
             col = glm.vec3(0.0,0.0,0.0)
             for s in range(0,ns,1):
-                u = float(i + random.uniform(0,0.999999999999999))/float(nx)
-                v = float(j + random.uniform(0,0.999999999999999))/float(ny)
+                u = float(i + ran())/float(nx)
+                v = float(j + ran())/float(ny)
                 r = cam.get_ray(u,v)
                 p = glm.vec3(r.point_at_parameter(2.0))
                 col = color(r,world,0) + col
