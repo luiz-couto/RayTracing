@@ -25,7 +25,10 @@ De forma diferente ao que é feito no livro do Peter Shirley, ao invés de criar
 Para a implementação foram criadas algumas classes, que serão brevemente explicadas nesse arquivo(para explicações mais profundas, veja o livro do Peter Shirley).
 
 ### Classe Ray
-Define cada raio que será disparado. Ele é definido a partir de sua origem (um vetor) e uma direção (também um vetor).
+Pense em um raio como uma função **p (t) = A + t * B**. Onde *p* é uma posição 3D ao longo de uma linha em 3D. *A* é a origem do raio e *B* é a direção do raio. O parâmetro *t* é um número real. Um diferente *t* faz com que *p* (t) mova-se ao longo do raio.
+### Sphere
+
+
 
 
 
