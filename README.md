@@ -28,7 +28,15 @@ Para a implementação foram criadas algumas classes, que serão brevemente expl
 Pense em um raio como uma função **p (t) = A + t * B**. Onde *p* é uma posição 3D ao longo de uma linha em 3D. *A* é a origem do raio e *B* é a direção do raio. O parâmetro *t* é um número real. Um diferente *t* faz com que *p* (t) mova-se ao longo do raio.
 ### Sphere
 A classe sphere foi projetada a partir da equação de uma esfera. Ela define uma esfera a partir de seu raio, centro e material. Além disso, verifica se um raio atinge sua superfície a partir da função *hit*, que recebe como parâmetro um raio *r*.
-### 
+### Camera
+A classe camera tem a função de simular uma câmera, definindo sua origem, posição e direção(para onde ela aponta). Nela, chamamos a posição em que colocamos a câmera de *lookfrom*, e o ponto que olhamos de *lookat*.
+### Camera_blur
+Essa classe possui tudo que uma camêra igual à citada anteriormente possui, porém aborda um aspecto a mais: o foco. Ela possui duas váriaveis a mais(aperture e focus_dist) que juntas são responsáveis por mudar a "abertura da lente" e a distância focal. Assim, é criado o efeito de *motion_blur* , que dá a sensação de movimento focando ou não em certos objetos.
+### Classes de Material
+Nesse projeto possuimos três classes de material.Cada uma delas define um comportamento diferente para os raios que interceptam sua superfície:
+* Lambertian: Material difuso, que quando um raio atinge sua superfície, emite esses raios em várias direções. Ou seja, a luz que reflete em uma superfície difusa tem sua direção randomizada.
+* Metal: Faz com que a superfície do objeto seja similar ao comportamento de um metal.
+* Dielectric: Objeto se comporta como uma superfície espelhada. Um caso interessante é quando temos duas esferas desse material combinadas, o que dá um aspecto de vidro 100% transparente. 
 
 
 
