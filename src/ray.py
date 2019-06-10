@@ -1,5 +1,5 @@
 
-#TEST PPM FILE
+#
 
 import glm
 import math
@@ -10,6 +10,7 @@ import random
 MAXFLOAT = 3.4028234664e+38
 M_PI = 3.14159265358979323846264338327950288
 
+# Define um raio
 class Ray:
     def __init__(self,a,b):
         self.a = glm.vec3(a)
@@ -21,7 +22,7 @@ class Ray:
         return self.a + t*self.b  
 
 
-
+# Define uma esfera
 class sphere:
     def __init__(self,cen,r,material):
         self.center = glm.vec3(cen)
@@ -50,6 +51,7 @@ class sphere:
                 return True
         return False
 
+# Lista do que foi "atingido"
 class hitable_list:
     def __init__(self,l,n):
         self._list = l
@@ -65,7 +67,7 @@ class hitable_list:
                 rec = temp_rec
         return hit_anything
 
-
+# Define a camera comum
 class camera:
     def __init__(self, lookfrom, lookat, vup, vfov, aspect):
         self.theta = vfov*M_PI/180
@@ -82,6 +84,7 @@ class camera:
     def get_ray(self,s,t):
         return(Ray(self.origin,self.lower_left_corner + s*self.horizontal + t*self.vertical - self.origin))
 
+# Define a camera com blur motion(foco)
 class camera_blur:
     def __init__(self, lookfrom, lookat, vup, vfov, aspect, aperture, focus_dist):
         self.lens_radius = aperture/2
@@ -101,7 +104,7 @@ class camera_blur:
         offset = self.u*rd[0] + self.v*rd[1]
         return(Ray(self.origin + offset,self.lower_left_corner + s*self.horizontal + t*self.vertical - self.origin - offset))
 
-
+# Define o material difuso
 class lambertian:
     def __init__(self,a):
         self.albedo = glm.vec3(a)
@@ -111,6 +114,7 @@ class lambertian:
         attenuation = self.albedo
         return (True,scattered,attenuation)
 
+# Define o material metal
 class metal:
     def __init__(self,a,f):
         self.albedo = a
@@ -124,28 +128,7 @@ class metal:
         attenuation = self.albedo
         return(glm.dot(scattered.direction, rec.normal) > 0,scattered,attenuation)
 
-class dielectric:
-    def __init__(self,ri):
-        self.ref_idx = ri
-    def scatter(self,r_in,rec,attenuation,scattered):
-        outward_normal = glm.vec3
-        reflected = glm.vec3(reflect(r_in.direction, rec.normal))
-        attenuation = glm.vec3(1.0,1.0,1.0)
-        refracted = glm.vec3
-        if(glm.dot(r_in.direction, rec.normal) > 0):
-            outward_normal = -rec.normal
-            ni_over_nt = self.ref_idx
-        else:
-            outward_normal = rec.normal
-            ni_over_nt = 1.0/self.ref_idx
-        x,refracted = refract(r_in.direction,outward_normal,ni_over_nt,refracted)
-        if(x == True):
-            scattered = Ray(rec.p, refracted)
-        else:
-            scattered = Ray(rec.p, reflected)
-            return (False,scattered,attenuation)
-        return (True,scattered,attenuation)
-
+# Define o material vidro/espelho
 class dielectric:
     def __init__(self,ri):
         self.ref_idx = ri
@@ -191,10 +174,11 @@ def random_in_unit_disk():
     return p
 
 
-
+# Calcula o raio refletido
 def reflect(v,n):
     return (v - 2*glm.dot(v,n)*n)
 
+# Calcula o raio refratado
 def refract(v,n,ni_over_nt,refracted):
     uv = glm.vec3(v/glm.length(v))
     dt = glm.dot(uv, n)
@@ -217,7 +201,7 @@ def random_in_unit_sphere():
         p = 2.0*glm.vec3(ran(),ran(),ran()) - glm.vec3(1.0,1.0,1.0)
     return p
 
-
+# Calcula a cor de cada pixel
 def color(r,world,depth):
     rec = hit_record
     if(world.hit(r,0.001,MAXFLOAT,rec)):
@@ -235,10 +219,11 @@ def color(r,world,depth):
         t = 0.5*(unit_direction[1]+1)
         return (1.0 - t)*glm.vec3(1.0,1.0,1.0) + t*glm.vec3(0.5,0.7,1.0)
 
+# Calcula número aleatório entre 0 e 1(sem incluir o 1)
 def ran():
     return random.uniform(0,0.999999999999999)
 
-
+# Calcula a cena gerada aleatoriamente
 def random_scene():
     
     _list = {}
@@ -270,11 +255,32 @@ def random_scene():
 
 def main():
 
-    nx = 200
-    ny = 100
-    ns = 100
+    print("\n--------------------------------------------------------\n\n\n                       RAY TRACING\n\n\n--------------------------------------------------------\n")
+    print("Antes de tudo, defina o nome do arquivo de saída, a largura e a altura da imagem. Após inserir cada valor, apenas aperte ENTER para ir para a pŕoxima etapa.")
+    print("Para utilizar os valores padrões, apenas deixe os campos em branco. Os valorees padrões definirão a imagem com 480px de largura, 340px de altura e nome 'MyImage'.\n")
+    
+    file_name = input("> Escolha o nome do arquivo de saída:")
+    if(file_name == ''):
+        file_name = "MyImage"
+    else:
+        file_name = str(file_name)
 
-    f = open("test.ppm","w+")
+    nx = input('> Largura:')
+    if(nx == ''):
+        nx = 480
+    else:
+        nx = int(nx)
+
+    ny = input('> Altura:')
+    if(ny == ''):
+        ny = 340
+    else:
+        ny = int(ny)
+
+    print("\nConstruindo imagem............")
+    
+    ns = 100
+    f = open(file_name+".ppm","w+")
     f.write("P3\n"+ str(nx) +" "+ str(ny) + "\n255\n")
     
     _list,i = random_scene()
@@ -321,5 +327,7 @@ def main():
             ig = int(255.99*col[1])
             ib = int(255.99*col[2])
             f.write(str(ir) + " " + str(ig) + " " + str(ib) + "\n")
+            if(j==0 and i==nx-1 and s==ns-1):
+                print("Tudo Pronto!")
    
 main()
