@@ -3,6 +3,7 @@
 ## Overview
 Esse projeto tem como objetivo a implementção de um RayTracing que produz uma imagem do tipo ppm como saída. O programa aqui apresentado foi feito em python, e tem como principal referência  o livro *Ray Tracing in One Weekend* do Peter Shirley, que pode ser encontrado nesse link:
 >  https://github.com/petershirley/raytracinginoneweekend
+
 Já que esse projeto foi inspirado no livro acima, este documento não está tão detalhado no que diz respeito ao funcionamento das diversas classes e funções, focando mais na implementação relacionada ao ambiente python e em algumas mudanças em particular.
 
 ## Para Compilar
