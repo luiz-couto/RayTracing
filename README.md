@@ -19,7 +19,7 @@ pip install *nome_da_biblioteca*
 ```
 Para compilar o programa, simplesmente entre na pasta onde está o arquivo *.py* e rode a partir do terminal:
 ```
-python3 ppm_test.py
+python3 ray.py
 
 ```
 ## Implementação
