@@ -23,7 +23,7 @@ python3 ppm_test.py
 ```
 ## Implementação
 De forma diferente ao que é feito no livro do Peter Shirley, ao invés de criar uma própria classe declarando o tipo vetor - vec3 -(o que gastaria bastante espaço e demandaria bastante tempo) foi utilizado o tipo *vec3* da biblioteca *pyglm*. Ele já possui todas as operações essenciais relacionadas à vetores que precisaremos ao longo do programa. 
-Para a implementação foram criadas algumas classes, que serão brevemente explicadas nesse arquivo(para explicações mais profundas, veja o livro do Peter Shirley).
+Para a implementação foram criadas algumas classes e funções, que serão brevemente explicadas nesse arquivo(para explicações mais profundas, veja o livro do Peter Shirley).
 
 ### Classe Ray
 Pense em um raio como uma função **p (t) = A + t * B**. Onde *p* é uma posição 3D ao longo de uma linha em 3D. *A* é a origem do raio e *B* é a direção do raio. O parâmetro *t* é um número real. Um diferente *t* faz com que *p* (t) mova-se ao longo do raio.
@@ -49,9 +49,16 @@ Calcula a direção do raio refratado com os mesmos parâmetros descritos acima.
 Calcula a cor final de cada pixel.
 ### Ran()
 Função que calcula um número aleatório entre 0 e 1(nunca igual a um). Essa função utiliza da biblioteca *random* para gerar os números.
-
+### Random in unit sphere
+Gera um ponto aleatório(vec3) em uma esfera de raio unitário centrada na origem.
+### Random in unit disk
+Gera um ponto aleatório(vec3) em um disco de raio unitário. É usado na classe camera_blur. 
 ### RandomScene
 Gera uma cena com 3 bolas maiores de diferentes materias que são fixas e bolas menores variadas, na qual o material e posição de cada uma é definida aleatoriamente.
+### Schilk
+Calcula a aproximação da refletividade que varia com o ângulo em um vidro real usando a equação de Christophe Schlick. Usado nos objetos de material do tipo do *dielectric*.
+### Main
+Main!
 
-
+No final da implementação, temos um arquivo .py que engloba todas essas classes e funções, capaz de gerar esferas com posições pré-establecidas ou geradas em tempo de execução. Quando executado o arquivo, é possível definir o tamanho da imagem assim como o nome da imagem(.ppm) a ser gerada. Vale lembrar que quanto maior for a resolução da imagem e mais complexa a cena, mais demorada será a geração do .ppm.
 
